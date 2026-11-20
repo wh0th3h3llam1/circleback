@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { EventItem, IngestResult, TrailStep } from "@/lib/contracts";
 import AirbyteCard from "./AirbyteCard";
+import EventLink from "./EventLink";
 import { usePoll, useSpeech } from "./hooks";
 import { IconCalendar, IconMic, IconNote, IconTelegram } from "./icons";
 import { postJson, shortDate } from "./ui";
@@ -88,11 +89,11 @@ function EventsCard() {
       {!events.loading && !events.error && list.length === 0 && <p className="text-[13px] text-[var(--muted)]">No events yet.</p>}
       <ul className="flex flex-col gap-2">
         {list.map((ev) => (
-          <li key={ev.id} className="rounded-[14px] bg-white/70 border border-white px-3.5 py-3">
+          <li key={ev.id} className="rounded-[10px] bg-white border border-[var(--line)] px-3.5 py-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <a href={ev.url} target="_blank" rel="noreferrer" className="text-[14px] font-medium hover:underline underline-offset-4">
+              <EventLink url={ev.url || `/events/${ev.id}`} className="text-[14px] font-medium hover:underline underline-offset-4">
                 {ev.title}
-              </a>
+              </EventLink>
               <span className="chip !text-[11px] !py-1">{ev.source === "luma" ? "Luma" : "Partiful"}</span>
               {ev.seeded && <span className="tag-demo">demo data</span>}
             </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import type { GraphData, Person } from "@/lib/contracts";
 import Avatar from "./Avatar";
 import { usePoll } from "./hooks";
@@ -19,6 +20,9 @@ const GROUPS: { key: string; label: string; test: (p: Person) => boolean }[] = [
 export default function PeopleView() {
   const graph = usePoll<GraphData>("/api/graph", 5000);
   const [q, setQ] = useState("");
+  const params = useSearchParams();
+  const urlQ = params.get("q") ?? "";
+  useEffect(() => setQ(urlQ), [urlQ]);
   const all = (graph.data?.people ?? []).filter((p) => p.id !== "me");
   const list = q.trim() ? all.filter((p) => `${p.name} ${p.org ?? ""} ${p.role ?? ""} ${p.topics.join(" ")}`.toLowerCase().includes(q.toLowerCase())) : all;
 

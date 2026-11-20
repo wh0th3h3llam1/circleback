@@ -3,6 +3,7 @@ import type { EventItem, Opportunity, OpportunitiesResponse, TrailStep } from ".
 import { ask } from "./ask";
 import * as sie from "./sie";
 import { db } from "./store";
+import { withUrl } from "./events";
 
 const g = globalThis as unknown as { __opps?: { key: string; value: OpportunitiesResponse } };
 
@@ -92,7 +93,7 @@ export async function opportunities(refresh = false): Promise<OpportunitiesRespo
       title: `Go to ${e.title}`,
       why: why.slice(0, 3),
       score: 0.3 + 0.5 * s,
-      event: e,
+      event: withUrl(e),
       person: hostsInNetwork[0] || undefined,
       draft: connectors[0] ? { toPersonId: connectors[0].id, text: `Hey ${connectors[0].name.split(" ")[0]}, are you going to ${e.title}? I'd love an intro to ${e.hosts[0]} there.` } : undefined,
     };

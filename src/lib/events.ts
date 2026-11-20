@@ -6,6 +6,11 @@ import * as sie from "./sie";
 import * as s2 from "./s2";
 import { db, newId, save } from "./store";
 
+/** Demo events have no public page; they open Circleback's own event page instead. */
+export function withUrl(e: EventItem): EventItem {
+  return e.url ? e : { ...e, url: `/events/${e.id}` };
+}
+
 export function eventText(e: EventItem) {
   return `Event: ${e.title}${e.start ? ` on ${e.start.slice(0, 16).replace("T", " ")}` : ""}${e.location ? ` at ${e.location}` : ""} (${e.source}). Hosts: ${e.hosts.join(", ") || "unknown"}. ${e.description || ""}`.slice(0, 3000);
 }

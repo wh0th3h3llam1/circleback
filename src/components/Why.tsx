@@ -75,7 +75,7 @@ export function WhySources({ candidate, memory, trail, defaultOpen = false }: { 
                 <div className="flex flex-col gap-2">
                   <div className="label">Evidence</div>
                   {candidate.evidence.map((e) => (
-                    <blockquote key={e.messageId} className="text-[13px] rounded-[12px] bg-white/70 border border-[var(--line)] px-3 py-2">
+                    <blockquote key={e.messageId} className="text-[13px] rounded-[12px] bg-[#F7F8F5] border border-[var(--line)] px-3 py-2">
                       “{e.text}”
                       <div className="mt-1 flex items-center gap-2 text-[11px] text-[var(--muted)]">
                         <span className="mono">
@@ -100,7 +100,7 @@ export function WhySources({ candidate, memory, trail, defaultOpen = false }: { 
           {memory && (
             <div>
               <div className="label mb-1.5">Cognee recall</div>
-              <p className="text-[13px] whitespace-pre-line text-[#2d4a41] rounded-[12px] bg-white/70 border border-[var(--line)] px-3 py-2">{memory.replace(/\*\*/g, "").replace(/^#+\s*/gm, "")}</p>
+              <p className="text-[13px] whitespace-pre-line text-[#2d4a41] rounded-[12px] bg-[#F7F8F5] border border-[var(--line)] px-3 py-2">{memory.replace(/\*\*/g, "").replace(/^#+\s*/gm, "")}</p>
             </div>
           )}
           <div>

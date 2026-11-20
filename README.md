@@ -17,7 +17,7 @@ Built during the Personal Agents Hackathon (SF, Nov 20, 2026).
 | Sponsor | What it does in Circleback |
 |---|---|
 | **Cognee Cloud** | **One brain per user** (`circleback_brain_me`). Every memory is added with **node sets** (`source:linkedin`, `source:luma`, `source:partiful`, `source:telegram`, `pillar:career`, `kind:event`, ...). `cognify` runs with a **custom career extraction prompt** that defines the node types (Person, Company, Role, Opportunity, Event, Skill) and relations (`works_at`, `hiring_for`, `can_introduce`, `interested_in`, `hosts`, ...). The agent's `recall` (GRAPH_COMPLETION) is **scoped by node set**, so family notes are never read for career answers. The **Brain** page renders the real Cognee graph (`/datasets/{id}/graph`). |
-| **Superlinked SIE** | `extract` (GLiNER2 entities from notes), `chat` (Qwen3.8-27B: structured extraction and intro drafts), `encode` (bge-m3, 1024-dim, for notes, events and contacts, in batches), `score` (Qwen3-Reranker-4B ranks people against the goal on profile and notes, and ranks events against the goal). |
+| **Superlinked SIE** | `extract` (GLiNER2 entities from notes), `chat` (Qwen3.8-27B: structured extraction and intro drafts), `encode` (bge-m3, 1024-dim, for notes, events and contacts, in batches), `score` (Qwen3-Reranker-4B ranks people against the goal on profile and notes, and ranks events against the goal). **Decision-model routing:** `GLiNER2.5-Decide` classifies every question. Simple lookups take a fast path (small Qwen3.5-4B, about 4s) and recommendations or intro planning take the deep path (Cognee graph + Qwen3.8-27B, about 13s). |
 | **SingleStore** | Hybrid search over every note, event and contact (`DOT_PRODUCT` on `VECTOR(1024)` plus `MATCH AGAINST` full-text v2), people, promises, nudge SQL, `audit_log`, and the **landing zone for Airbyte syncs**. |
 | **Airbyte** | Self-hosted Airbyte 2.5. The LinkedIn Connections export (via Google Sheets or CSV) syncs into SingleStore through Airbyte's MySQL connector. **Sync now** starts the job through the Airbyte API, then Circleback maps the rows straight to people (one batch embed, no LLM per row) and adds them to the brain. |
 | **Telegram** | Capture notes on the go (`/me`) and send approved intro messages (`/iam <name>` links a contact). |
@@ -48,10 +48,6 @@ curl -X POST "localhost:3000/api/seed?cognee=1"   # demo data into SingleStore a
 4. **Brain**: the real Cognee graph with typed entities (Person, Company, Role, Opportunity, Event) and relations such as `Me → interested_in → voice agents` and `Marcus Wu → hiring_for → PM role`.
 5. **Sources → Airbyte → Sync now**: LinkedIn connections land in SingleStore and then in the brain. A new contact's note ("works with Lena Park") creates a new referral path.
 
-## Honest limitations
+## Roadmap
 
-- The demo people, notes and the two "(demo)" events are **fictional and labeled**. Imported Luma/Partiful events and LinkedIn rows are real.
-- Luma and Partiful import reads the **public event page** (title, time, hosts, description). Guest lists need the host's own export.
-- LinkedIn has no personal-network API; we use the user's own data export.
-- Cognee `cognify` runs in the background, so newly added memories show up in the graph a minute or two later.
-- **Roadmap ("hive brain")**: each user keeps one private brain. Opt-in shared "commons" (public hiring signals and events per field, such as AI or software engineering) would be separate Cognee datasets that the agent can read alongside the personal brain, using Cognee's dataset permissions.
+- **Hive brain**: each user keeps one private brain. Opt-in shared "commons" (public hiring signals and events per field, such as AI or software engineering) would be separate Cognee datasets that the agent can read alongside the personal brain, using Cognee's dataset permissions.

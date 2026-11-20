@@ -1,5 +1,5 @@
-import OpportunitiesView from "@/components/OpportunitiesView";
+import HomeView from "@/components/HomeView";
 
 export default function Page() {
-  return <OpportunitiesView />;
+  return <HomeView />;
 }

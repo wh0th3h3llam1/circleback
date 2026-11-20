@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #dce5df;
-  --bg-hi: #eef3ef;
-  --glass: rgba(255, 255, 255, 0.72);
-  --glass-strong: rgba(255, 255, 255, 0.88);
-  --glass-line: rgba(255, 255, 255, 0.95);
-  --line: #c7d3cb;
+  --bg: #f7f8f5;
+  --bg-hi: #fbfcfa;
+  --side: #fbfcfa;
+  --glass: #ffffff;
+  --glass-strong: #ffffff;
+  --glass-line: #e8ebe6;
+  --line: #e8ebe6;
+  --hover: #f1f4ef;
+  --sage-soft: #e9efe9;
   --text: #17302a;
   --muted: #5f7a70;
   --teal: #1f4a40;
@@ -17,14 +20,13 @@
   --career: #c9a24a;
   --projects: #8a9a4b;
   --family: #b5523b;
-  --shadow: 0 1px 2px rgba(23, 48, 42, 0.05), 0 8px 24px rgba(23, 48, 42, 0.06);
+  --shadow: 0 1px 2px rgba(23, 48, 42, 0.04);
   color-scheme: light;
 }
 
 html,
 body {
-  background: radial-gradient(120% 90% at 50% 30%, var(--bg-hi) 0%, var(--bg) 60%);
-  background-color: var(--bg);
+  background: var(--bg);
   color: var(--text);
   min-height: 100%;
 }
@@ -46,11 +48,57 @@ body {
 
 .glass {
   background: var(--glass);
-  border: 0.5px solid var(--glass-line);
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--glass-line);
   box-shadow: var(--shadow);
-  border-radius: 18px;
+  border-radius: 12px;
+}
+
+.serif {
+  font-family: var(--font-serif-app), Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  margin: 0 -10px;
+  border-radius: 10px;
+  transition: background 0.12s ease;
+}
+button.row,
+a.row {
+  cursor: pointer;
+}
+button.row:hover,
+a.row:hover {
+  background: var(--hover);
+}
+
+.section-h {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.skel {
+  background: linear-gradient(90deg, #eef1ec 0%, #f6f8f4 50%, #eef1ec 100%);
+  background-size: 200% 100%;
+  animation: skel 1.2s linear infinite;
+  border-radius: 6px;
+}
+@keyframes skel {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .chip {
@@ -62,7 +110,7 @@ body {
   padding: 6px 10px;
   border-radius: 999px;
   background: #fff;
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   color: #2d4a41;
   white-space: nowrap;
 }
@@ -85,7 +133,7 @@ button.chip {
   padding: 10px 16px;
   border-radius: 999px;
   cursor: pointer;
-  border: 0.5px solid var(--line);
+  border: 1px solid var(--line);
   background: #fff;
   color: var(--text);
   transition: transform 0.12s ease, background 0.15s ease;
@@ -123,9 +171,9 @@ button.chip {
 
 .field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.85);
-  border: 0.5px solid var(--line);
-  border-radius: 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
   padding: 10px 12px;
   font-size: 14px;
   color: var(--text);
