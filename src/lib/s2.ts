@@ -192,7 +192,7 @@ export async function airbyteRows(table: string, limit = 25): Promise<{ key: str
   });
 }
 
-/** Demo reset: empties Circleback's own tables (never touches tables Airbyte writes). */
+/** Demo reset: empties Orbit's own tables (never touches tables Airbyte writes). */
 export async function clearCore() {
   await ensureSchema();
   for (const t of ["messages", "people", "promises"]) await pool().query(`TRUNCATE TABLE ${DB}.${t}`);

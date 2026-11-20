@@ -20,11 +20,11 @@ async function call(method: string, path: string, body?: unknown) {
   console.log("workspace", ws);
 
   const dests = (await call("GET", "/api/public/v1/destinations")).data as { destinationId: string; name: string }[];
-  let destId = dests.find((d) => d.name === "SingleStore (Circleback)")?.destinationId;
+  let destId = dests.find((d) => d.name === "SingleStore (Orbit)")?.destinationId;
   if (!destId) {
     destId = (
       await call("POST", "/api/public/v1/destinations", {
-        name: "SingleStore (Circleback)",
+        name: "SingleStore (Orbit)",
         workspaceId: ws,
         configuration: {
           destinationType: "mysql",
@@ -45,11 +45,11 @@ async function call(method: string, path: string, body?: unknown) {
 
   if (!CSV_URL) return console.log("Set CSV_URL to create the File source + connection.");
   const srcs = (await call("GET", "/api/public/v1/sources")).data as { sourceId: string; name: string }[];
-  let srcId = srcs.find((s) => s.name === "Contacts CSV (Circleback)")?.sourceId;
+  let srcId = srcs.find((s) => s.name === "Contacts CSV (Orbit)")?.sourceId;
   if (!srcId) {
     srcId = (
       await call("POST", "/api/public/v1/sources", {
-        name: "Contacts CSV (Circleback)",
+        name: "Contacts CSV (Orbit)",
         workspaceId: ws,
         configuration: { sourceType: "file", dataset_name: "linkedin_connections", format: "csv", url: CSV_URL, provider: { storage: "HTTPS", user_agent: false } },
       })

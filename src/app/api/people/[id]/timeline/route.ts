@@ -21,7 +21,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   // Seed-pack items (calendar, Gmail, LinkedIn chats, Luma, meetings, promises, voice)
   for (const t of d.timeline || []) if (t.personIds.includes(id)) items.push({ id: t.id, kind: t.kind, date: t.date, title: t.title, body: t.body, status: t.status, location: t.location, synthetic: t.synthetic });
 
-  // Notes captured in Circleback (Telegram, web, voice, seeded notes, generated chats), skipping ones already shown
+  // Notes captured in Orbit (Telegram, web, voice, seeded notes, generated chats), skipping ones already shown
   const seen = new Set(items.map((i) => `m_${i.id}`));
   for (const m of d.messages) {
     if (!m.personIds.includes(id) || seen.has(m.id) || m.id.startsWith("m_tl_") || m.text.startsWith("Connected on LinkedIn")) continue;
@@ -35,7 +35,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       synthetic: m.seeded,
     });
   }
-  // Open promises captured in Circleback
+  // Open promises captured in Orbit
   for (const p of d.promises) {
     if (p.personId !== id || (d.timeline || []).some((t) => t.kind === "promise" && t.title === p.text && t.personIds.includes(id))) continue;
     items.push({ id: p.id, kind: "promise", date: p.due ? new Date(p.due).toISOString() : new Date().toISOString(), title: p.text, body: p.direction === "i_owe" ? "You promised" : `${person.name.split(" ")[0]} promised`, status: p.status === "kept" ? "kept" : "open", synthetic: false });

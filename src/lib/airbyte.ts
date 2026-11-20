@@ -1,6 +1,6 @@
 // Airbyte (self-hosted Community 2.x) via its public API.
 // Flow: Airbyte syncs a source (Slack, Gmail, Calendar, a CSV, ...) into SingleStore,
-// then Circleback reads the new rows and runs each one through the normal capture pipeline.
+// then Orbit reads the new rows and runs each one through the normal capture pipeline.
 const URL_ = (process.env.AIRBYTE_URL || "").replace(/\/$/, "");
 const ID = process.env.AIRBYTE_CLIENT_ID || "";
 const SECRET = process.env.AIRBYTE_CLIENT_SECRET || "";

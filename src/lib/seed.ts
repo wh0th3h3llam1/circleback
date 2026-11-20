@@ -12,7 +12,7 @@ const inDays = (n: number) => new Date(Date.now() + n * 86400000).toISOString().
 type P = Omit<Person, "tier" | "points" | "telegramLinked" | "seeded" | "lastContact">;
 const people: P[] = [
   { id: "maya", name: "Maya Chen", org: "Lumen Labs", role: "Staff engineer", pillars: ["work", "career"], topics: ["payments infra", "realtime systems"], met: true, summary: "Former teammate for 4 years; now staff engineer at Lumen Labs." },
-  { id: "arjun", name: "Arjun Rao", org: "Circleback", role: "Cofounder", pillars: ["projects"], topics: ["go-to-market", "fundraising"], met: true, summary: "Cofounder on the side project." },
+  { id: "arjun", name: "Arjun Rao", org: "Orbit", role: "Cofounder", pillars: ["projects"], topics: ["go-to-market", "fundraising"], met: true, summary: "Cofounder on the side project." },
   { id: "mom", name: "Mom", pillars: ["family"], topics: ["family"], met: true },
   { id: "sam", name: "Sam Rivera", role: "College friend", pillars: ["family"], topics: ["climbing", "music"], met: true, summary: "College roommate, closest friend." },
   { id: "priya", name: "Priya Nair", org: "Northwind Health", role: "VP Engineering", pillars: ["career"], topics: ["engineering leadership", "healthcare", "mentoring"], met: true, summary: "Former manager and career mentor." },
@@ -46,7 +46,7 @@ const notes: M[] = [
   [9, "work", "[calendar] 1:1 with Maya Chen, catch-up on realtime systems.", ["maya"]],
   [30, "work", "[calendar] Lunch with Maya and Diego at Lumen Labs.", ["maya", "diego"]],
   [5, "projects", "Arjun and I agreed I'd send him the pitch deck draft by Friday before the Tidewater call.", ["arjun"]],
-  [1, "projects", "[calendar] Standup with Arjun about the Circleback demo.", ["arjun"]],
+  [1, "projects", "[calendar] Standup with Arjun about the Orbit demo.", ["arjun"]],
   [12, "projects", "[calendar] Design review with Jordan for the 3D switchboard.", ["jordan"]],
   [6, "projects", "Jordan wants to try a copper-wire look for the graph. Arjun loves it.", ["jordan", "arjun"]],
   [3, "family", "Call with Mom, she wants us all home for Thanksgiving. Promised to book my flight this week.", ["mom"]],

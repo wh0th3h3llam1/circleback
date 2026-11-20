@@ -63,9 +63,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="hidden md:flex flex-col px-3 py-4 border-r sticky top-0 h-dvh" style={{ background: "var(--side)", borderColor: "var(--line)" }}>
-        <Link href="/" className="flex items-center gap-2.5 px-2 mb-5" aria-label="Circleback home">
+        <Link href="/" className="flex items-center gap-2.5 px-2 mb-5" aria-label="Orbit home">
           <Logo />
-          <span className="text-[16px] font-semibold tracking-tight">Circleback</span>
+          <span className="text-[16px] font-semibold tracking-tight">Orbit</span>
         </Link>
         <nav aria-label="Main" className="flex flex-col gap-0.5">
           {NAV.map(({ href, label, icon: Icon }) => {
@@ -103,7 +103,7 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
       <div className="min-w-0 flex flex-col">
         <header className="flex items-center gap-3 px-4 md:px-6 h-14 border-b" style={{ borderColor: "var(--line)", background: "var(--side)" }}>
-          <Link href="/" className="md:hidden flex items-center gap-2" aria-label="Circleback home">
+          <Link href="/" className="md:hidden flex items-center gap-2" aria-label="Orbit home">
             <Logo />
           </Link>
           <form

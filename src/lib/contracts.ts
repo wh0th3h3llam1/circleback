@@ -137,7 +137,7 @@ export interface AirbyteStatus {
   authed: boolean;
   version?: string;
   connections: { id: string; name: string; status: string; lastSync?: string }[];
-  imported: number; // people/notes imported into Circleback from Airbyte syncs
+  imported: number; // people/notes imported into Orbit from Airbyte syncs
   error?: string;
 }
 

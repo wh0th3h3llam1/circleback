@@ -95,7 +95,7 @@ export default function AskView() {
   return (
     <div className="mx-auto w-full max-w-[720px] px-4 md:px-8 pt-6 md:pt-10 flex flex-col min-h-[calc(100dvh-140px)] md:min-h-dvh">
       <h1 className="text-[26px] md:text-[30px] font-semibold tracking-tight">Ask your circle</h1>
-      <p className="text-[14px] text-[var(--muted)] mt-1">Say what you&apos;re working on. Circleback finds who can help, or who can introduce you.</p>
+      <p className="text-[14px] text-[var(--muted)] mt-1">Say what you&apos;re working on. Orbit finds who can help, or who can introduce you.</p>
 
       <div className="flex flex-col gap-4 mt-6 flex-1" aria-live="polite">
         {items.length === 0 && !busy && (

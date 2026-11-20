@@ -9,7 +9,7 @@ async function main() {
   let offset = 0;
   // Make sure no webhook is set, otherwise getUpdates returns 409.
   await fetch(`https://api.telegram.org/bot${TOKEN}/deleteWebhook`);
-  console.log("Circleback bot polling…");
+  console.log("Orbit bot polling…");
   for (;;) {
     try {
       const r = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?timeout=25&offset=${offset}`);

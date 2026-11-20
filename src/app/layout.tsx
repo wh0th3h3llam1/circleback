@@ -8,7 +8,7 @@ const mono = JetBrains_Mono({ variable: "--font-mono-app", subsets: ["latin"] })
 const serif = Instrument_Serif({ variable: "--font-serif-app", subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
-  title: "Circleback",
+  title: "Orbit",
   description: "Who's your best call? A personal agent that remembers your people and finds the right intro.",
 };
 

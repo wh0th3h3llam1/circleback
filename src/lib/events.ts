@@ -6,7 +6,7 @@ import * as sie from "./sie";
 import * as s2 from "./s2";
 import { db, newId, save } from "./store";
 
-/** Demo events have no public page; they open Circleback's own event page instead. */
+/** Demo events have no public page; they open Orbit's own event page instead. */
 export function withUrl(e: EventItem): EventItem {
   return e.url ? e : { ...e, url: `/events/${e.id}` };
 }
@@ -24,7 +24,7 @@ export async function importEvent(url: string): Promise<{ event: EventItem; trai
   if (!source) throw new Error("Paste a Luma (luma.com / lu.ma) or Partiful (partiful.com) event link");
   const trail: TrailStep[] = [];
   let t = Date.now();
-  const res = await fetch(u.toString(), { headers: { "User-Agent": "Circleback/0.1 (event preview)" }, signal: AbortSignal.timeout(15000) });
+  const res = await fetch(u.toString(), { headers: { "User-Agent": "Orbit/0.1 (event preview)" }, signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`${source} returned ${res.status}`);
   const html = await res.text();
 

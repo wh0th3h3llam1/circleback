@@ -150,12 +150,12 @@ export default function Landing() {
 
       <section className="lp-hero">
         <Reveal>
-          <p className="lp-eyebrow">Circleback · your career brain</p>
+          <p className="lp-eyebrow">Orbit · your career brain</p>
           <h1 className="lp-h1 lp-serif">Your network already knows your next job.</h1>
-          <p className="lp-sub lp-muted">Circleback is a personal career agent. It remembers everyone you meet and finds the warm path to the opportunity you want.</p>
+          <p className="lp-sub lp-muted">Orbit is a personal career agent. It remembers everyone you meet and finds the warm path to the opportunity you want.</p>
           <div className="lp-btns">
             <Link href="/" className="lp-btn lp-btn-primary">
-              Open Circleback →
+              Open Orbit →
             </Link>
             <a href="#how" className="lp-btn">
               See how it works
@@ -272,10 +272,10 @@ export default function Landing() {
       <Reveal>
         <section className="lp-final">
           <h2 className="lp-h2 lp-serif">Find your next warm intro.</h2>
-          <p className="lp-muted" style={{ margin: "0 0 22px" }}>Set a goal. Circleback finds who can get you there.</p>
+          <p className="lp-muted" style={{ margin: "0 0 22px" }}>Set a goal. Orbit finds who can get you there.</p>
           <div className="lp-btns" style={{ justifyContent: "center" }}>
             <Link href="/" className="lp-btn lp-btn-primary">
-              Open Circleback →
+              Open Orbit →
             </Link>
             <a href="https://github.com/wh0th3h3llam1/circleback" target="_blank" rel="noopener noreferrer" className="lp-btn">
               View on GitHub ↗

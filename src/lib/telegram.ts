@@ -33,7 +33,7 @@ export async function handleUpdate(u: Update): Promise<string> {
   if (text.startsWith("/start")) {
     await sendMessage(
       chatId,
-      "Circleback here. Send /me to make this chat your Circleback inbox (notes you send become memories). If you're one of the contacts, send /iam <your full name> so intros can reach you.",
+      "Orbit here. Send /me to make this chat your Orbit inbox (notes you send become memories). If you're one of the contacts, send /iam <your full name> so intros can reach you.",
     );
     return "start";
   }
