@@ -7,7 +7,7 @@ export const PILLARS: Pillar[] = ["work", "family", "career", "projects"];
 // Closeness tiers, from twinwire people-tier-rules: points over the last 90 days.
 export type Tier = "inner" | "close" | "good" | "known";
 
-export type Source = "seed" | "telegram" | "voice" | "web" | "slack" | "linkedin";
+export type Source = "seed" | "telegram" | "voice" | "web" | "slack" | "linkedin" | "gmail" | "calendar" | "meeting";
 
 export interface Person {
   id: string; // "me" is the user
@@ -23,6 +23,9 @@ export interface Person {
   telegramLinked: boolean;
   seeded: boolean; // demo data, labeled in UI
   summary?: string;
+  linkedinUrl?: string;
+  connectedOn?: string;
+  metAt?: string;
 }
 
 export interface Edge {
@@ -137,6 +140,29 @@ export interface AirbyteStatus {
   imported: number; // people/notes imported into Circleback from Airbyte syncs
   error?: string;
 }
+
+// ---- Person timeline (every interaction with one person) ----
+export type TimelineKind = "connected" | "luma" | "linkedin" | "gmail" | "calendar" | "meeting" | "voice" | "promise" | "note";
+export interface TimelineItem {
+  id: string;
+  kind: TimelineKind;
+  date: string; // ISO
+  title: string;
+  body?: string; // multi-line allowed ("You: ...\nRosa: ...")
+  status?: "kept" | "slipped" | "open" | "upcoming" | "past";
+  location?: string;
+  synthetic: boolean; // from the synthetic seed pack
+}
+export interface PersonTimeline {
+  person: Person;
+  linkedinUrl?: string;
+  connectedOn?: string;
+  metAt?: string;
+  counts: Partial<Record<TimelineKind, number>>;
+  openPromises: number;
+  items: TimelineItem[]; // oldest first
+}
+// GET /api/people/[id]/timeline -> PersonTimeline
 
 // ---- Career brain (single Cognee brain per user) ----
 export interface BrainNode {

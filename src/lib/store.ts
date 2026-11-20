@@ -2,7 +2,7 @@
 // SingleStore mirrors messages/people/promises for search and SQL; Cognee holds the per-pillar memory graph.
 import fs from "node:fs";
 import path from "node:path";
-import type { Edge, EventItem, Message, Person, Pillar, Promise as PromiseRow, Tier } from "./contracts";
+import type { Edge, EventItem, Message, Person, Pillar, Promise as PromiseRow, Tier, TimelineItem } from "./contracts";
 
 export interface StoredMessage extends Message {
   vec?: number[];
@@ -18,6 +18,7 @@ export interface Db {
   airbyteImported?: string[]; // row keys already imported from Airbyte-synced tables
   goal?: string; // the user's career goal
   events?: EventItem[];
+  timeline?: (TimelineItem & { personIds: string[] })[];
 }
 
 const FILE = path.join(process.cwd(), "data", "store.json");

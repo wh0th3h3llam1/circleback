@@ -14,7 +14,9 @@ const BrainGlobe = dynamic(() => import("./BrainGlobe"), { ssr: false });
 const LEGEND = ["Person", "Company", "Role", "Event", "Skill"];
 
 export default function BrainView() {
-  const brain = usePoll<BrainGraph>("/api/brain", 60000);
+  // Fetch once; the graph is large and refetching rebuilds the scene. Refresh is manual.
+  const brain = usePoll<BrainGraph>("/api/brain", 0);
+  const [refreshing, setRefreshing] = useState(false);
   const params = useSearchParams();
   const reduce = useReducedMotion();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -50,6 +52,18 @@ export default function BrainView() {
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-[18px] font-semibold">Your brain</h1>
             {g && <span className="chip !text-[11px] mono">{g.dataset}</span>}
+            <button
+              type="button"
+              className="btn !py-1 !px-2.5 text-[12px] ml-auto"
+              disabled={refreshing}
+              onClick={async () => {
+                setRefreshing(true);
+                await brain.refresh();
+                setRefreshing(false);
+              }}
+            >
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </button>
           </div>
           <p className="text-[12.5px] text-[var(--muted)] mt-1">Live from Cognee Cloud · single brain per user</p>
           {g && (

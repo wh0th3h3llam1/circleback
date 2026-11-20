@@ -3,28 +3,31 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { GraphData, Message, Person, PersonPatch, Pillar, Promise as PromiseRow } from "@/lib/contracts";
+import type { GraphData, Message, Person, PersonPatch, PersonTimeline, Pillar, Promise as PromiseRow, TimelineKind } from "@/lib/contracts";
+import Timeline, { KindChips } from "./Timeline";
 import Avatar from "./Avatar";
 import { usePoll } from "./hooks";
 import { IconBack, IconCalendar, IconChevron, IconEdit, IconMic, IconNote, IconTelegram, IconX } from "./icons";
-import { PILLARS, PILLAR_COLOR, PILLAR_LABEL, isOverdue, postJson, shortDate, tierLabel, timeAgo } from "./ui";
+import { PILLARS, PILLAR_LABEL, postJson, shortDate, tierLabel } from "./ui";
 
-const SOURCE_ICON = { telegram: IconTelegram, voice: IconMic, web: IconNote, seed: IconCalendar, slack: IconNote, linkedin: IconNote } as const;
+const SOURCE_ICON: Partial<Record<string, typeof IconNote>> = { telegram: IconTelegram, voice: IconMic, web: IconNote, seed: IconCalendar, slack: IconNote, linkedin: IconNote, calendar: IconCalendar };
 
 export default function PersonView() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const graph = usePoll<GraphData>("/api/graph", 5000);
-  const msgs = usePoll<Message[]>(id ? `/api/messages?personId=${encodeURIComponent(id)}` : null, 8000);
-  const proms = usePoll<PromiseRow[]>("/api/promises", 8000);
+  const graph = usePoll<GraphData>("/api/graph", 15000);
+  const tl = usePoll<PersonTimeline>(id ? `/api/people/${encodeURIComponent(id)}/timeline` : null, 20000);
+  const msgs = usePoll<Message[]>(id ? `/api/messages?personId=${encodeURIComponent(id)}` : null, 0);
+  const proms = usePoll<PromiseRow[]>("/api/promises", 15000);
   const [editing, setEditing] = useState(false);
+  const [filter, setFilter] = useState<Set<TimelineKind>>(new Set());
 
-  const person = graph.data?.people.find((p) => p.id === id);
-  const byId = new Map((graph.data?.people ?? []).map((p) => [p.id, p]));
+  const person = tl.data?.person ?? graph.data?.people.find((p) => p.id === id);
   const mine = (proms.data ?? []).filter((p) => p.personId === id && p.status === "open");
-  const links = (graph.data?.edges ?? []).filter((e) => (e.from === id || e.to === id) && e.from !== "me" && e.to !== "me");
+  const openPromises = tl.data ? tl.data.openPromises : mine.length;
+  const items = tl.data?.items ?? [];
 
-  if (graph.loading) return <p className="p-8 text-[14px] text-[var(--muted)]">Loading…</p>;
+  if (!person && (graph.loading || tl.loading)) return <p className="p-8 text-[14px] text-[var(--muted)]">Loading…</p>;
   if (!person)
     return (
       <div className="p-8 flex flex-col gap-3 items-start">
@@ -35,137 +38,95 @@ export default function PersonView() {
       </div>
     );
 
-  const askQ = person.topics.length ? `Who can help me with ${person.topics.slice(0, 2).join(" and ")}?` : `What should I talk to ${person.name} about?`;
+  const first = person.name.split(" ")[0];
+  const connected = tl.data?.connectedOn;
+  const subtitle = [
+    [person.role, person.org].filter(Boolean).join(" at ") || "No role yet",
+    connected ? `connected ${new Date(connected).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const askQ = `What should I know about ${person.name}, and how can ${first} help my career goal?`;
+  const toggle = (k: TimelineKind) =>
+    setFilter((f) => {
+      const n = new Set(f);
+      if (n.has(k)) n.delete(k);
+      else n.add(k);
+      return n;
+    });
 
   return (
-    <div className="mx-auto w-full max-w-[640px] px-4 md:px-8 pt-5 md:pt-10 pb-10 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <button type="button" className="w-10 h-10 grid place-items-center rounded-full glass !rounded-full" aria-label="Back" onClick={() => router.back()}>
-          <IconBack size={18} />
-        </button>
-        <span className="text-[14px] font-medium">Person</span>
-        <button type="button" className="w-10 h-10 grid place-items-center rounded-full glass !rounded-full" aria-label="Edit details" onClick={() => setEditing(true)}>
-          <IconEdit size={18} />
-        </button>
-      </div>
+    <div className="mx-auto w-full max-w-[760px] px-4 md:px-8 pt-5 md:pt-10 pb-12 flex flex-col gap-6 min-w-0">
+      <button type="button" className="inline-flex items-center gap-1.5 text-[13px] text-[var(--muted)] hover:text-[var(--ink)] self-start" onClick={() => router.back()}>
+        <IconBack size={14} /> Back
+      </button>
 
-      <section className="glass p-5 flex flex-col items-center text-center gap-2">
-        <Avatar person={person} size={64} />
-        <h1 className="text-[22px] font-semibold mt-1">{person.name}</h1>
-        <p className="text-[14px] text-[var(--muted)]">{[person.role, person.org].filter(Boolean).join(" · ") || "No role yet"}</p>
-        <div className="flex flex-wrap justify-center gap-1.5 mt-1">
-          <span className="chip">{tierLabel(person)}</span>
-          {person.pillars.map((p) => (
-            <span key={p} className="chip" style={{ color: PILLAR_COLOR[p] }}>
-              {PILLAR_LABEL[p]}
-            </span>
-          ))}
-          {person.telegramLinked && <span className="chip" style={{ color: "var(--green)" }}>On Telegram</span>}
-          {person.seeded && <span className="tag-demo self-center">demo data</span>}
-        </div>
-        <div className="grid grid-cols-3 w-full mt-3 text-[12px]">
-          <div>
-            <div className="text-[var(--muted)]">Last talked</div>
-            <div className="font-semibold text-[14px] mt-0.5">{person.lastContact ? timeAgo(person.lastContact) : "—"}</div>
-          </div>
-          <div>
-            <div className="text-[var(--muted)]">Points</div>
-            <div className="font-semibold text-[14px] mt-0.5">{person.points}</div>
-          </div>
-          <div>
-            <div className="text-[var(--muted)]">Open promises</div>
-            <div className="font-semibold text-[14px] mt-0.5" style={{ color: mine.length ? "var(--orange)" : undefined }}>
-              {mine.length}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {person.summary && <p className="text-[14px] text-[#2d4a41] px-1">{person.summary}</p>}
-
-      <section className="flex flex-col gap-2" aria-labelledby="know-h">
-        <h2 id="know-h" className="label">
-          What you know
-        </h2>
-        {person.topics.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {person.topics.map((t) => (
-              <span key={t} className="chip">
-                {t}
+      <header className="flex flex-col gap-3">
+        <div className="flex items-start gap-4 min-w-0">
+          <Avatar person={person} size={56} />
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-[26px] md:text-[28px] font-semibold leading-tight break-words">{person.name}</h1>
+              <span className="rounded-full border px-2 py-[1px] text-[11px] font-semibold tracking-wide uppercase" style={{ borderColor: "var(--green,#1d8a52)", color: "var(--green,#1d8a52)" }}>
+                {tierLabel(person)}
               </span>
-            ))}
+              {person.seeded && <span className="tag-demo">demo data</span>}
+            </div>
+            <p className="text-[14px] text-[var(--muted)] mt-1 break-words">
+              {subtitle}
+              {openPromises > 0 && <span style={{ color: "var(--orange,#E9772E)" }}> · {openPromises} open promise{openPromises === 1 ? "" : "s"}</span>}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {tl.data?.linkedinUrl && (
+            <a href={tl.data.linkedinUrl} target="_blank" rel="noopener noreferrer" className="btn btn-dark !py-2 !px-3.5 text-[13px]">
+              View LinkedIn profile ↗
+            </a>
+          )}
+          <Link href={`/ask?q=${encodeURIComponent(askQ)}`} className="btn !py-2 !px-3.5 text-[13px]">
+            Ask about {first} <IconChevron size={14} />
+          </Link>
+          <button type="button" className="btn !py-2 !px-3.5 text-[13px]" onClick={() => setEditing(true)}>
+            <IconEdit size={14} /> Edit
+          </button>
+        </div>
+        {tl.data && <KindChips counts={tl.data.counts} active={filter} onToggle={toggle} />}
+      </header>
+
+      {person.summary && <p className="text-[14px] text-[#2d4a41] -mt-2">{person.summary}</p>}
+
+      <section className="flex flex-col gap-2 min-w-0" aria-labelledby="tl-h">
+        <h2 id="tl-h" className="label">
+          Your history with {first}
+        </h2>
+        {tl.loading && <p className="text-[13px] text-[var(--muted)]">Loading timeline…</p>}
+        {tl.data && items.length > 0 && <Timeline items={items} filter={filter} />}
+        {!tl.loading && items.length === 0 && (
+          <div className="flex flex-col gap-2">
+            {(msgs.data ?? []).map((m) => {
+              const Icon = SOURCE_ICON[m.source] ?? IconNote;
+              return (
+                <div key={m.id} className="rounded-[12px] border border-[var(--line,#E8EBE6)] bg-white flex gap-3 px-4 py-3">
+                  <span className="w-7 h-7 grid place-items-center rounded-full bg-[#F3F5F1] shrink-0" style={{ color: "var(--teal)" }}>
+                    <Icon size={14} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[14px] leading-snug whitespace-pre-line break-words">{m.text}</p>
+                    <div className="text-[12px] text-[var(--muted)] mt-1 flex gap-2 items-center">
+                      {shortDate(m.ts)} · {m.source}
+                      {m.seeded && <span className="tag-demo">demo data</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+            {msgs.data && msgs.data.length === 0 && <p className="text-[13px] text-[var(--muted)]">No interactions yet. Add a note with Edit.</p>}
           </div>
         )}
-        {links.map((e) => {
-          const other = byId.get(e.from === id ? e.to : e.from);
-          if (!other) return null;
-          return (
-            <Link key={`${e.from}-${e.to}`} href={`/people/${other.id}`} className="glass flex items-center gap-3 px-4 py-2.5 text-[13px]">
-              <Avatar person={other} size={28} />
-              <span className="flex-1">
-                Knows <b className="font-semibold">{other.name}</b>
-                {e.evidence ? <span className="text-[var(--muted)]"> · {e.evidence}</span> : null}
-              </span>
-            </Link>
-          );
-        })}
-        {(msgs.data ?? []).map((m) => {
-          const Icon = SOURCE_ICON[m.source] ?? IconNote;
-          return (
-            <div key={m.id} className="glass flex gap-3 px-4 py-3">
-              <span className="w-7 h-7 grid place-items-center rounded-full bg-white shrink-0" style={{ color: "var(--teal)" }}>
-                <Icon size={14} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-[14px] leading-snug">{m.text}</p>
-                <div className="text-[12px] text-[var(--muted)] mt-1 flex gap-2 items-center">
-                  {shortDate(m.ts)} · {m.source}
-                  {m.seeded && <span className="tag-demo">demo data</span>}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        {msgs.data && msgs.data.length === 0 && <p className="text-[13px] text-[var(--muted)]">No notes yet. Add one with the edit button.</p>}
       </section>
 
-      {mine.length > 0 && (
-        <section className="flex flex-col gap-2" aria-labelledby="prom-h">
-          <h2 id="prom-h" className="label">
-            Promises
-          </h2>
-          {mine.map((p) => (
-            <div key={p.id} className="glass px-4 py-3 flex items-center gap-3" style={{ border: p.direction === "i_owe" ? "1px solid var(--orange)" : undefined }}>
-              <span className="flex-1 text-[14px]">
-                <span style={{ color: p.direction === "i_owe" ? "var(--orange)" : "var(--teal)" }}>{p.direction === "i_owe" ? "You promised: " : "They promised: "}</span>
-                {p.text}
-              </span>
-              {p.due && (
-                <span className="text-[12px]" style={{ color: isOverdue(p.due) ? "var(--orange)" : "var(--muted)" }}>
-                  {isOverdue(p.due) ? "was due " : "due "}
-                  {shortDate(p.due)}
-                </span>
-              )}
-            </div>
-          ))}
-        </section>
-      )}
-
-      <section className="flex flex-col gap-2" aria-labelledby="next-h">
-        <h2 id="next-h" className="label">
-          Next step
-        </h2>
-        <Link href={`/ask?q=${encodeURIComponent(askQ)}`} className="flex items-center justify-between rounded-[16px] px-4 py-3.5 text-[14px] font-medium" style={{ background: "var(--teal)", color: "var(--teal-ink)" }}>
-          {person.met ? `Ask about ${person.topics[0] ?? person.name.split(" ")[0]}` : `Find the best intro to ${person.name.split(" ")[0]}`}
-          <IconChevron size={16} />
-        </Link>
-        <button type="button" className="glass flex items-center justify-between px-4 py-3 text-[14px]" onClick={() => setEditing(true)}>
-          Edit details or add a note
-          <IconEdit size={16} />
-        </button>
-      </section>
-
-      {editing && <EditSheet person={person} onClose={() => setEditing(false)} onSaved={() => (graph.refresh(), msgs.refresh())} />}
+      {editing && <EditSheet person={person} onClose={() => setEditing(false)} onSaved={() => (graph.refresh(), msgs.refresh(), tl.refresh())} />}
     </div>
   );
 }
