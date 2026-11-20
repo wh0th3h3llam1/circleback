@@ -51,3 +51,4 @@ Connections.csv
 *.zip
 linkedin_messages.csv
 seed-pack/
+render.env

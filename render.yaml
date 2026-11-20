@@ -1,0 +1,52 @@
+# Render Blueprint for Orbit. Secrets are NOT stored here (the repo is public):
+# every `sync: false` value is asked for when you create the Blueprint. Paste them from render.env (local, gitignored).
+services:
+  - type: web
+    name: orbit
+    runtime: node
+    plan: starter
+    branch: main
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
+    disk:
+      name: orbit-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: SIE_BASE_URL
+        value: https://api.superlinked.com
+      - key: SINGLESTORE_PORT
+        value: "3306"
+      - key: SINGLESTORE_USER
+        value: admin
+      - key: SINGLESTORE_DATABASE
+        value: hacakthon
+      - key: AIRBYTE_IMPORT_TABLES
+        value: linkedin_connections
+      - { key: SIE_API_KEY, sync: false }
+      - { key: COGNEE_API_KEY, sync: false }
+      - { key: COGNEE_BASE_URL, sync: false }
+      - { key: SINGLESTORE_HOST, sync: false }
+      - { key: SINGLESTORE_PASSWORD, sync: false }
+      - { key: TELEGRAM_BOT_TOKEN, sync: false }
+      - { key: AIRBYTE_URL, sync: false }
+      - { key: AIRBYTE_PASSWORD, sync: false }
+      - { key: BOT_SECRET, sync: false }
+      - { key: ACCESS_KEY, sync: false }
+
+  - type: worker
+    name: orbit-telegram-bot
+    runtime: node
+    plan: starter
+    branch: main
+    buildCommand: corepack enable && pnpm install --frozen-lockfile
+    startCommand: pnpm exec tsx scripts/telegram-bot.ts
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: APP_URL
+        value: https://orbit.onrender.com
+      - { key: TELEGRAM_BOT_TOKEN, sync: false }
+      - { key: BOT_SECRET, sync: false }
