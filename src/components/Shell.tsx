@@ -60,6 +60,9 @@ export default function Shell({ children }: { children: React.ReactNode }) {
 
   const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 
+  // The marketing landing page renders full-width, without the app chrome.
+  if (path.startsWith("/landing")) return <>{children}</>;
+
   return (
     <div className="min-h-dvh md:grid md:grid-cols-[220px_minmax(0,1fr)]">
       <aside className="hidden md:flex flex-col px-3 py-4 border-r sticky top-0 h-dvh" style={{ background: "var(--side)", borderColor: "var(--line)" }}>

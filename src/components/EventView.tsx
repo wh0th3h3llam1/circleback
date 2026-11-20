@@ -64,6 +64,22 @@ export default function EventView() {
                 Open on {ev.source === "luma" ? "Luma" : "Partiful"} ↗
               </a>
             )}
+            {!external && (
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(`site:${ev.source === "luma" ? "luma.com" : "partiful.com"} ${ev.title.replace(/\s*\(demo\)\s*/i, "")}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-dark inline-flex"
+                >
+                  Find on {ev.source === "luma" ? "Luma" : "Partiful"} ↗
+                </a>
+                <a href={ev.source === "luma" ? "https://luma.com/discover" : "https://partiful.com"} target="_blank" rel="noopener noreferrer" className="btn inline-flex">
+                  Browse {ev.source === "luma" ? "Luma events" : "Partiful"} ↗
+                </a>
+                <span className="text-[12px] text-[var(--muted)]">No public page is saved for this event yet.</span>
+              </div>
+            )}
           </header>
 
           {ev.description && (
