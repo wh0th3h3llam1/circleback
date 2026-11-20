@@ -69,6 +69,12 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
   }
   const msgById = new Map(d.messages.map((m) => [m.id, m]));
   const hitMsgs = hits.map((h) => msgById.get(h.id)).filter((m): m is StoredMessage => !!m && pillars.includes(m.pillar));
+  // Conversations (chat threads) carry the richest signal; make sure the nearest ones are considered too.
+  if (qvec) {
+    const convo = allowedMsgs.filter((m) => m.text.startsWith("Synthetic chat") || m.source === "telegram" || m.source === "web");
+    const near = localSearch(qvec, convo).slice(0, 4).map((h) => msgById.get(h.id)).filter((m): m is StoredMessage => !!m && !hitMsgs.includes(m));
+    hitMsgs.unshift(...near);
+  }
   const hitRank = new Map<string, number>();
   hitMsgs.forEach((m, i) => m.personIds.forEach((pid) => hitRank.set(pid, Math.max(hitRank.get(pid) || 0, 1 - i / 10))));
 
@@ -133,7 +139,7 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
     const mem = Math.min(1, (inMemory ? 0.7 : 0) + (hitRank.get(p.id) || 0) * 0.5);
     // Lookups care about the match itself; recommendations weigh closeness and reachability too.
     const score = opts.fast
-      ? 0.8 * relevance + 0.1 * tie + 0.1 * recency
+      ? 0.55 * relevance + 0.35 * (hitRank.get(p.id) || 0) + 0.05 * tie + 0.05 * recency
       : W.relevance * relevance + W.tie * tie + W.reach * reach + W.recency * recency + W.memory * mem;
 
     const why: string[] = [];
@@ -168,7 +174,7 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
     toId = best.via ? best.via.id : best.person.id;
     const facts = [
       ...top.map((c) => `${c.person.name}: ${[c.person.role, c.person.org].filter(Boolean).join(" at ")}${c.via ? ` (not met; reachable via ${c.via.name})` : ""}`),
-      ...hitMsgs.slice(0, 5).map((m) => `${m.ts.slice(0, 10)} note: ${m.text}`),
+      ...hitMsgs.slice(0, 8).map((m) => `${m.ts.slice(0, 10)} note: ${m.text.slice(0, 600)}`),
     ].join("\n");
     reply = await trail.tryRun(
       "SIE",
