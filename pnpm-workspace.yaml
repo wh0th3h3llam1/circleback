@@ -1,3 +1,7 @@
 # pnpm-workspace.yaml
 overrides:
   '@babel/runtime': 7.29.14
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
