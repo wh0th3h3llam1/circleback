@@ -81,6 +81,8 @@ export interface Candidate {
   why: string[]; // short human reasons
   path: string[]; // person ids from "me" to target, e.g. ["me","maya","lena"]
   via?: Person; // the connector when not direct
+  label?: "opportunity" | "reconnect" | "research" | "intro" | "match"; // why, by kind of evidence
+  today?: string; // e.g. "Judging Personal Agents Hackathon today"
   evidence: Evidence[];
 }
 

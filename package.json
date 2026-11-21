@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "bot": "tsx --env-file=.env.local scripts/telegram-bot.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "drill": "tsx --env-file=.env.local scripts/drill.ts"
   },
   "dependencies": {
     "@react-three/drei": "10.7.6",

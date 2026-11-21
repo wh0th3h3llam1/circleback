@@ -123,10 +123,24 @@ export default function AnswerCard({ answer, onPick }: { answer: Answer; onPick?
             >
               <Avatar person={c.person} size={38} />
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-semibold truncate">{c.person.name}</span>
+                <span className="flex items-center gap-2">
+                  <span className="text-[14px] font-semibold truncate">{c.person.name}</span>
+                  {c.label && c.label !== "match" && c.label !== "intro" && (
+                    <span
+                      className="text-[10px] font-semibold tracking-[0.08em] uppercase rounded-full px-2 py-0.5"
+                      style={{
+                        background: c.label === "opportunity" ? "#FCE9DC" : c.label === "reconnect" ? "#E2F1EA" : "#E8E6F7",
+                        color: c.label === "opportunity" ? "#B4541A" : c.label === "reconnect" ? "#1F6B4C" : "#5A4BB0",
+                      }}
+                    >
+                      {c.label === "research" ? "Research match" : c.label}
+                    </span>
+                  )}
+                </span>
                 <span className="block text-[12px] text-[var(--muted)] truncate">
                   {c.via ? pathText(c, people) : [c.person.role, c.person.org].filter(Boolean).join(" · ") || tierLabel(c.person)}
                 </span>
+                {c.today && <span className="block text-[12px] mt-0.5 truncate" style={{ color: "#1F4A40" }}>{c.why.slice(0, 2).join(" · ")}</span>}
               </span>
               {isTop && c.via ? (
                 <span className="chip" style={{ background: "var(--green)", color: "#fff", borderColor: "var(--green)", fontWeight: 600 }}>

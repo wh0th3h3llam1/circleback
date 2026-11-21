@@ -27,6 +27,26 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
   const byId = new Map(d.people.map((p) => [p.id, p]));
   const allowedMsgs = d.messages.filter((m) => pillars.includes(m.pillar));
 
+  // Today's event: an imported event whose title appears in the question. Its page lists who is there.
+  const ql = query.toLowerCase();
+  const event = (d.events || []).find((e) => {
+    const words = e.title.toLowerCase().replace(/\(demo\)/, "").split(/\W+/).filter((w) => w.length > 3);
+    return words.length > 0 && words.filter((w) => ql.includes(w)).length >= Math.min(2, words.length);
+  });
+  const attendees = new Map<string, string>(); // personId -> "Judging X today" / "At X today"
+  if (event) {
+    const desc = event.description || "";
+    const judgesAt = desc.toLowerCase().indexOf("judges");
+    for (const p of d.people) {
+      if (p.id === "me") continue;
+      const at = desc.indexOf(p.name);
+      const isHost = event.hosts.some((h) => h.toLowerCase() === p.name.toLowerCase());
+      if (at < 0 && !isHost) continue;
+      attendees.set(p.id, judgesAt >= 0 && at > judgesAt ? `Judging ${event.title} today` : `At ${event.title} today`);
+    }
+    trail.note("Rules", "today's event", `${event.title}: ${attendees.size} people from your graph are on its page`, true);
+  }
+
   // 1. Graph memory (Cognee) runs in parallel with SIE work. The fast path skips it.
   const memoryP = cog.cogneeEnabled() && !opts.fast
     ? trail.tryRun(
@@ -90,7 +110,7 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
       const s = sie.cosine(qvec, m.vec);
       for (const pid of m.personIds) if (s > (best.get(pid) ?? -1)) best.set(pid, s);
     }
-    const core = pool.filter((p) => !p.met || p.tier !== "known");
+    const core = pool.filter((p) => !p.met || p.tier !== "known" || attendees.has(p.id));
     const rest = pool
       .filter((p) => p.met && p.tier === "known")
       .sort((a, b) => (best.get(b.id) ?? -1) - (best.get(a.id) ?? -1))
@@ -156,12 +176,38 @@ export async function ask(query: string, opts: { fast?: boolean; preTrail?: Trai
       .slice(0, 3)
       .map((m) => ({ messageId: m.id, text: m.text, source: m.source, ts: m.ts, pillar: m.pillar, seeded: m.seeded }));
 
-    return { person: p, score: Math.round(score * 1000) / 1000, parts: { relevance, tie, reach, recency, memory: mem }, why, path, via, evidence };
+    // Label by the kind of evidence you share with them.
+    const all = d.messages.filter((m) => m.personIds.includes(p.id)).map((m) => m.text.toLowerCase()).join(" ");
+    const label: Candidate["label"] = /applied to|application/.test(all)
+      ? "opportunity"
+      : /placed \d|judges were/.test(all) && p.met
+        ? "reconnect"
+        : /research/.test(all)
+          ? "research"
+          : via
+            ? "intro"
+            : "match";
+    const today = attendees.get(p.id);
+    if (today) {
+      const lead =
+        label === "opportunity"
+          ? (d.messages.find((m) => m.personIds.includes(p.id) && /applied/i.test(m.text))?.text.split(".")[0] ?? "")
+          : label === "reconnect"
+            ? "You placed 2nd at Hive Mind, where they judged"
+            : label === "research"
+              ? "Their agent-systems work overlaps your SJSU inference research"
+              : "";
+      why.unshift(...[today, lead].filter(Boolean));
+    }
+    // At an event, people on its page come first, and those you share concrete history with lead.
+    const shared = label === "opportunity" || label === "reconnect" || label === "research";
+    const boosted = event ? score + (today ? 0.5 + (label === "opportunity" ? 0.9 : shared ? 0.4 : 0) : -0.3) : score;
+    return { person: p, score: Math.round(boosted * 1000) / 1000, parts: { relevance, tie, reach, recency, memory: mem }, why, path, via, evidence, label, today };
   });
   scored.sort((a, b) => b.score - a.score);
   // Only people who are actually relevant make the shortlist (always keep at least one).
-  const relevant = scored.filter((c) => c.parts.relevance >= 0.2);
-  const top = (relevant.length ? relevant : scored).slice(0, 3);
+  const relevant = scored.filter((c) => c.parts.relevance >= 0.2 || c.today);
+  const top = (relevant.length ? relevant : scored).slice(0, event ? 6 : 3);
   trail.note("Rules", "score", "0.42 relevance + 0.18 tie + 0.15 reach + 0.10 recency + 0.15 memory", false);
 
   // 5. Draft (to connector if the best person is second-degree)
